@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>바다일까 육지일까</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,6 +42,9 @@
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.3); color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.6; padding-inline: 16px; padding-block: 16px 32px; }
 .app { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 h1, h2, h3, .display { font-family: var(--f-display); font-weight: 400; text-wrap: balance; margin: 0; }
@@ -131,6 +136,22 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1.5px solid 
 .ctable th { text-align: left; font-weight: 400; color: var(--muted); font-size: .82rem; padding: 4px 8px; position: sticky; top: 0; background: var(--surface); }
 .ctable td { padding: 6px 8px; border-top: 1px solid var(--line); }
 .ctable tr.me td { background: var(--surface-2); font-family: var(--f-display); }
+.tbtn { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 16px; font-family: var(--f-display); font-size: .98rem; color: var(--muted); }
+.tbtn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tview { display: flex; flex-direction: column; gap: 18px; }
+.tcard { background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); padding: 22px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.tcard h2 { font-size: 1.35rem; } .tcard h3 { font-size: 1.05rem; margin-top: 4px; }
+.thead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; }
+.tgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.ttable-wrap { overflow-x: auto; }
+.ttable { width: 100%; min-width: 620px; border-collapse: collapse; font-size: .93rem; }
+.ttable th { white-space: nowrap; text-align: left; font-weight: 400; color: var(--muted); font-size: .82rem; padding: 4px 10px; }
+.ttable td { padding: 9px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.ttable td:first-child { font-family: var(--f-display); white-space: nowrap; }
+.tbig .v { font-size: 2.6rem; }
+.tratio { height: 40px; font-size: 1.15rem; }
+#tHist { width: 100%; height: auto; display: block; }
+#tHist text { font-family: var(--f-body); font-size: 11px; fill: var(--muted); }
 .tools { display: flex; flex-wrap: wrap; gap: 8px; }
 .tool { display: inline-flex; align-items: center; gap: 8px; border: 2px solid var(--line); background: var(--surface); border-radius: 12px; padding: 8px 14px; font-family: var(--f-display); font-size: 1rem; }
 .tool[aria-pressed="true"] { border-color: var(--sea); background: var(--surface-2); color: var(--sea); }
@@ -195,9 +216,10 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1.5px solid 
       <button role="tab" id="tab-4" data-step="4" aria-selected="false"><span class="n">4</span>모눈 세기</button>
       <button role="tab" id="tab-5" data-step="5" aria-selected="false"><span class="n">5</span>정리하기</button>
     </nav>
+    <button class="tbtn" id="btnTeacher" aria-pressed="false">교사용 화면</button>
   </header>
 
-  <main class="stage">
+  <main class="stage" id="stageEl">
     <section class="globe-wrap">
       <div class="globe-box" id="globeBox">
         <canvas id="globe" aria-label="돌려 볼 수 있는 지구본"></canvas>
@@ -364,7 +386,6 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1.5px solid 
           <div class="ratio" id="cRatio"><div class="s" style="width:50%"></div><div class="l" style="width:50%"></div></div>
           <p class="small" id="cNote"></p>
           <div class="list-scroll"><table class="ctable"><thead><tr><th>이름표</th><th>찍은 횟수</th><th>바다 비율</th></tr></thead><tbody id="cRows"></tbody></table></div>
-          <div class="row-end" id="teacherRow" hidden><button class="btn warn" id="btnClearAll">반 결과 모두 지우기</button></div>
         </div>
         <div class="quiz" id="quiz">
           <h3>O, X 퀴즈</h3>
@@ -374,15 +395,67 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1.5px solid 
     </section>
   </main>
 
-  <details class="teacher">
-    <summary>선생님께: 수업 활용 안내</summary>
-    <div class="teacher-body">
-      <div><h4>탐구 흐름</h4><ul><li>둘러보기에서 탐구 질문을 세웁니다.</li><li>예상하기에서 까닭과 함께 예상합니다.</li><li>확인하기에서 자료를 모읍니다.</li><li>정리하기에서 예상과 결과를 비교해 결론을 냅니다.</li></ul></div>
-      <div><h4>콕! 찍기의 원리</h4><ul><li>‘돌리고 콕’, ‘10번·100번 콕’은 지구 표면 전체에 고르게 무작위로 점을 찍습니다.</li><li>찍는 횟수가 많을수록 바다 비율이 약 70%에 가까워집니다.</li><li>손가락으로 직접 찍은 점도 기록되지만, 보이는 면에 치우칠 수 있습니다.</li><li>모눈 세기의 지도는 등적도법(이큐얼 어스)이라 모든 칸의 넓이가 같습니다. 섞인 칸은 더 많은 쪽으로 정합니다.</li></ul></div>
-      <div><h4>함께 이야기할 거리</h4><ul><li>몇 번만 찍었을 때와 100번 찍었을 때 결과가 어떻게 다른가요?</li><li>친구마다 결과가 조금씩 다른 까닭은 무엇일까요?</li><li>호수와 강은 이 앱에서 육지로 칩니다.</li></ul></div>
+  <section class="tview" id="teacherView" hidden aria-label="교사용 화면">
+    <div class="tcard">
+      <div class="thead"><h2>수업 진행 안내</h2><span class="small">3학년 과학 · 지구의 모습 · 약 40분</span></div>
+      <div class="ttable-wrap"><table class="ttable">
+        <thead><tr><th>단계</th><th>시간</th><th>학생 활동</th><th>이렇게 물어보세요</th></tr></thead>
+        <tbody>
+          <tr><td>1 둘러보기</td><td>5분</td><td>지구본을 돌리며 대양과 대륙을 살핍니다.</td><td>"돌릴 때 어떤 색이 더 많이 보이나요?" "태평양 쪽에서는 어떤가요?"</td></tr>
+          <tr><td>2 예상하기</td><td>5분</td><td>더 넓은 쪽을 고르고, 바다를 10칸 중 몇 칸으로 칠한 뒤 까닭을 씁니다.</td><td>"그렇게 생각한 까닭은 무엇인가요?" 까닭을 꼭 적게 해 주세요.</td></tr>
+          <tr><td>3 확인하기</td><td>10분</td><td>돌리고 콕, 10번·100번 콕으로 자료를 모읍니다.</td><td>"몇 번만 찍었을 때와 100번 찍었을 때 무엇이 다른가요?" "친구와 결과가 다른 까닭은?"</td></tr>
+          <tr><td>4 모눈 세기</td><td>10분</td><td>평평한 지도의 칸을 바다와 육지로 칠하며 셉니다.</td><td>"칸이 섞여 있을 땐 어떻게 정했나요?" "콕 찍기 결과와 비슷한가요?"</td></tr>
+          <tr><td>5 정리하기</td><td>10분</td><td>예상과 결과를 비교하고 결론을 쓰고, 반 결과를 올립니다.</td><td>"내 예상은 맞았나요?" "반 전체 결과는 한 사람의 결과와 어떻게 다른가요?"</td></tr>
+        </tbody></table></div>
     </div>
-  </details>
-</div>
+
+    <div class="tgrid">
+      <div class="tcard">
+        <h2>참고 값</h2>
+        <ul class="list">
+          <li>지구 표면: <b style="color:var(--sea)">바다 약 71%</b>, <b style="color:var(--land-ink)">육지 약 29%</b> (10칸 중 바다 7칸, 육지 3칸)</li>
+          <li>모눈 세기 지도: 전체 <b id="tkTotal">-</b>칸 중 바다 <b id="tkSea">-</b>칸, 육지 <b id="tkLand">-</b>칸 (바다 <b id="tkPct">-</b>%)</li>
+          <li>모눈 세기 결과는 칸 크기와 섞인 칸을 정하는 방식에 따라 몇 %p 달라질 수 있어요.</li>
+        </ul>
+        <h3>콕 찍기의 원리</h3>
+        <ul class="list">
+          <li>돌리고 콕, 10번·100번 콕은 지구 표면에 고르게 무작위로 점을 찍어요.</li>
+          <li>손가락으로 직접 찍은 점은 보이는 면에 치우칠 수 있어요.</li>
+          <li>호수와 강은 이 앱에서 육지로 칩니다.</li>
+        </ul>
+      </div>
+      <div class="tcard">
+        <h2>자주 나오는 생각</h2>
+        <ul class="list">
+          <li><b>"육지가 더 넓어 보여요."</b> 대륙 쪽만 보고 있을 수 있어요. 태평양 쪽으로 돌려 보게 해 주세요.</li>
+          <li><b>"한 번 찍은 결과가 바다예요."</b> 한 번으로는 알 수 없어요. 횟수를 늘리면 어떻게 되는지 그래프로 보게 해 주세요.</li>
+          <li><b>"친구와 결과가 달라요."</b> 무작위로 찍기 때문이에요. 반 전체를 모으면 가까워져요.</li>
+          <li><b>"바다가 정확히 7칸이어야 해요."</b> 약 7칸이에요. 어림한 값이라는 점을 짚어 주세요.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tcard" id="tClass">
+      <div class="thead"><h2>우리 반 결과</h2><span class="small" id="tClassState">불러오는 중</span></div>
+      <p class="small" id="tClassMsg"></p>
+      <div id="tClassBody" hidden>
+        <div class="tally tbig">
+          <div><span class="k">참여한 친구</span><span class="v" id="tPeople">0</span></div>
+          <div><span class="k">모두 찍은 횟수</span><span class="v" id="tTotal">0</span></div>
+          <div><span class="k">반 전체 바다 비율</span><span class="v sea" id="tPct">-</span></div>
+        </div>
+        <div class="ratio tratio" id="tRatio"><div class="s" style="width:50%"></div><div class="l" style="width:50%"></div></div>
+        <h3>친구별 바다 비율 분포</h3>
+        <div class="chart-box"><svg id="tHist" viewBox="0 0 360 150" role="img" aria-label="친구별 바다 비율 분포"></svg></div>
+        <p class="small">친구마다 찍은 횟수가 적을수록 결과가 크게 흔들려요. 반 전체로 합치면 71%에 가까워진다는 점을 이야기해 보세요.</p>
+        <div class="list-scroll" style="max-height:320px"><table class="ctable"><thead><tr><th>이름표</th><th>찍은 횟수</th><th>바다 비율</th><th>모눈 바다:육지</th><th>예상(바다 칸)</th></tr></thead><tbody id="tRows"></tbody></table></div>
+        <div class="row-end">
+          <button class="btn" id="btnCsv" hidden>표를 CSV로 저장</button>
+          <button class="btn warn" id="btnClearAll" hidden>반 결과 모두 지우기</button>
+        </div>
+      </div>
+    </div>
+  </section></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
@@ -823,15 +896,58 @@ const LAND_TOPO = {"type":"Topology","objects":{"land":{"type":"GeometryCollecti
       }
       writing = false; up.disabled = !canWrite;
     });
-    const tr = document.getElementById('teacherRow');
-    if (user.isOwner && user.isOwner()) {
-      tr.hidden = false;
-      let arm = null; const b = document.getElementById('btnClearAll');
+    const owner = !!(user.isOwner && user.isOwner());
+    document.getElementById('tClassState').textContent = owner ? '선생님(작성자)으로 보고 있어요' : '읽기 전용';
+    document.getElementById('tClassBody').hidden = false;
+    document.getElementById('tClassMsg').textContent = '';
+    if (owner) {
+      let arm = null; const b = document.getElementById('btnClearAll'); b.hidden = false;
       b.addEventListener('click', async () => {
         if (!arm) { b.textContent = '한 번 더 누르면 모두 지워요'; arm = setTimeout(() => { b.textContent = '반 결과 모두 지우기'; arm = null; }, 3000); return; }
         clearTimeout(arm); arm = null; b.textContent = '반 결과 모두 지우기';
         if (!lastSnap) return;
         try { for (const d of lastSnap.docs) await col.doc(d.id).delete(); } catch (e) { msg.textContent = '일부를 지우지 못했어요.'; }
+      });
+    }
+    let dl = null; try { dl = await claude.use('downloads'); } catch (e) {}
+    let tRowsData = [];
+    const csvBtn = document.getElementById('btnCsv');
+    if (dl) {
+      csvBtn.hidden = false;
+      csvBtn.addEventListener('click', async () => {
+        const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+        const head = ['이름표', '바다', '육지', '모눈 바다 칸', '모눈 육지 칸', '예상 바다 칸'];
+        const lines = [head.map(esc).join(',')].concat(tRowsData.map(r => [r.nick, r.sea, r.land, r.gridSea || 0, r.gridLand || 0, r.pred].map(esc).join(',')));
+        try { await dl.save({ filename: '우리반_바다육지_결과.csv', data: '﻿' + lines.join('\r\n') }); } catch (e) {}
+      });
+    }
+    function renderTeacher(rows, S1, L1) {
+      tRowsData = rows;
+      const tot = S1 + L1, ps = tot ? Math.round(S1 / tot * 100) : null;
+      document.getElementById('tPeople').textContent = rows.length;
+      document.getElementById('tTotal').textContent = tot;
+      document.getElementById('tPct').textContent = ps == null ? '-' : ps + '%';
+      const rb = document.getElementById('tRatio'), w = ps == null ? 50 : ps;
+      rb.children[0].style.width = w + '%'; rb.children[1].style.width = (100 - w) + '%';
+      rb.children[0].textContent = ps == null ? '' : '바다 ' + ps + '%'; rb.children[1].textContent = ps == null ? '' : '육지 ' + (100 - ps) + '%';
+      const bins = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      rows.forEach(r => { const n = r.sea + r.land; if (n) bins[Math.min(9, Math.floor(r.sea / n * 10))]++; });
+      const mx = Math.max(1, ...bins), W = 360, H = 150, ml = 24, mb = 26, mt = 14, bw = (W - ml - 8) / 10;
+      let h = '';
+      for (let i = 0; i < 10; i++) {
+        const bh = bins[i] / mx * (H - mb - mt), x = ml + i * bw;
+        const isTarget = i === 7;
+        h += `<rect x="${x + 2}" y="${H - mb - bh}" width="${bw - 4}" height="${bh}" rx="3" fill="${isTarget ? 'var(--sea)' : 'var(--sea-light)'}"/>`;
+        if (bins[i]) h += `<text x="${x + bw / 2}" y="${H - mb - bh - 3}" text-anchor="middle">${bins[i]}</text>`;
+        h += `<text x="${x}" y="${H - 10}" text-anchor="start">${i * 10}</text>`;
+      }
+      h += `<line x1="${ml}" x2="${W - 8}" y1="${H - mb}" y2="${H - mb}" stroke="var(--line)"/><text x="${W - 8}" y="${H - 10}" text-anchor="end">100%</text>`;
+      document.getElementById('tHist').innerHTML = h;
+      const tb = document.getElementById('tRows'); tb.textContent = '';
+      rows.forEach(r => {
+        const n = r.sea + r.land, tr = document.createElement('tr');
+        [String(r.nick || '친구'), String(n), n ? Math.round(r.sea / n * 100) + '%' : '-', (r.gridSea || r.gridLand) ? (r.gridSea || 0) + ':' + (r.gridLand || 0) : '-', r.pred == null ? '-' : String(r.pred)].forEach(x => { const td = document.createElement('td'); td.textContent = x; tr.appendChild(td); });
+        tb.appendChild(tr);
       });
     }
     function render(snap) {
@@ -848,6 +964,7 @@ const LAND_TOPO = {"type":"Topology","objects":{"land":{"type":"GeometryCollecti
       rb.children[0].textContent = tot ? `바다 ${ps}%` : ''; rb.children[1].textContent = tot ? `육지 ${100 - ps}%` : '';
       document.getElementById('cNote').textContent = rows.length ? (tot ? `우리 반 ${rows.length}명이 ${tot}번 찍은 결과예요. 모눈 세기 합은 바다 칸 : 육지 칸이에요.` : '아직 찍은 횟수가 없어요.') : '아직 올린 친구가 없어요. 첫 번째로 올려 보세요!';
       rows.sort((a, b) => (b.sea + b.land) - (a.sea + a.land));
+      renderTeacher(rows, S1, L1);
       const tb = document.getElementById('cRows'); tb.textContent = '';
       for (const r of rows) {
         const tr = document.createElement('tr'); if (r.id === uid) tr.className = 'me';
@@ -859,6 +976,21 @@ const LAND_TOPO = {"type":"Topology","objects":{"land":{"type":"GeometryCollecti
     render({ docs: [] });
     col.limit(300).onSnapshot(render, () => { msg.textContent = '반 결과를 불러오지 못했어요.'; });
   })();
+
+  // ---------- teacher view ----------
+  document.getElementById('tkTotal').textContent = cells.length;
+  document.getElementById('tkSea').textContent = gSea;
+  document.getElementById('tkLand').textContent = gLand;
+  document.getElementById('tkPct').textContent = Math.round(gSea / cells.length * 100);
+  const tBtn = document.getElementById('btnTeacher'), tView = document.getElementById('teacherView');
+  document.getElementById('tClassMsg').textContent = '이 주소에서는 반 결과 모으기를 쓸 수 없어요. 반 결과는 claude.ai에서 연 앱에서만 모여요.';
+  tBtn.addEventListener('click', () => {
+    const on = tView.hidden;
+    tView.hidden = !on; document.getElementById('stageEl').hidden = on;
+    document.querySelector('.steps').hidden = on;
+    tBtn.setAttribute('aria-pressed', String(on)); tBtn.textContent = on ? '수업 화면으로' : '교사용 화면';
+    window.scrollTo({ top: 0 });
+  });
 
   // ---------- steps ----------
   const HINTS = {
