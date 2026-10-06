@@ -216,7 +216,7 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1.5px solid 
       <button role="tab" id="tab-4" data-step="4" aria-selected="false"><span class="n">4</span>모눈 세기</button>
       <button role="tab" id="tab-5" data-step="5" aria-selected="false"><span class="n">5</span>정리하기</button>
     </nav>
-    <button class="tbtn" id="btnTeacher" aria-pressed="false">교사용 화면</button>
+    <button class="tbtn" id="btnTeacher" aria-pressed="false" hidden>교사용 화면</button>
   </header>
 
   <main class="stage" id="stageEl">
@@ -983,6 +983,8 @@ const LAND_TOPO = {"type":"Topology","objects":{"land":{"type":"GeometryCollecti
   document.getElementById('tkLand').textContent = gLand;
   document.getElementById('tkPct').textContent = Math.round(gSea / cells.length * 100);
   const tBtn = document.getElementById('btnTeacher'), tView = document.getElementById('teacherView');
+  // 교사용 화면은 주소 끝에 ?teacher 를 붙여 열 때만 버튼이 보여요 (학생용 주소에서는 숨김)
+  if (/[?&#]teacher(?:[=&#]|$)/.test(location.search + location.hash)) tBtn.hidden = false;
   document.getElementById('tClassMsg').textContent = '이 주소에서는 반 결과 모으기를 쓸 수 없어요. 반 결과는 claude.ai에서 연 앱에서만 모여요.';
   tBtn.addEventListener('click', () => {
     const on = tView.hidden;
