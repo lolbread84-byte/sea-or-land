@@ -565,7 +565,7 @@ const LAND_TOPO = {"type":"Topology","objects":{"land":{"type":"GeometryCollecti
       rot = [anim.from[0] + (anim.to[0] - anim.from[0]) * e, anim.from[1] + (anim.to[1] - anim.from[1]) * e, 0];
       dirty = true;
       if (t >= 1) { const done = anim.done; anim = null; rot[0] = ((rot[0] % 360) + 540) % 360 - 180; done(); }
-    } else if (step === 1 && autoSpin && !drag && now - lastTouch > 2500 && !reduce) {
+    } else if (step === 1 && autoSpin && !drag && now - lastTouch > 2500) {
       rot[0] += 0.12; dirty = true;
     }
     if (dirty) { draw(); dirty = false; }
